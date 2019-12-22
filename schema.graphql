@@ -1,0 +1,100 @@
+type ProxyTrade @entity {
+  "This object is a summary of one or more trades handled through reserves."
+  id: ID!
+  trader: User!
+  "From token address"
+  src: String!
+  "To token address"
+  dest: String!
+  "From token amount in wei"
+  actualSrcAmount: BigInt!
+  "To token amount in wei"
+  actualDestAmount: BigInt!
+  createdAtBlockTimestamp: BigInt!
+  createdAtBlockNumber: BigInt!
+  createdAtLogIndex: BigInt!
+  createdAtTransactionHash: String!
+}
+
+type ReserveTrade @entity {
+  "This object is a single trade handled by a specific reserve - the result of which is also counted in ProxyTrade."
+  id: ID!
+  "From token address"
+  src: String!
+  "To token address"
+  dest: String!
+  "From token amount  (wei)"
+  srcAmount: BigInt!
+  "To token amount (wei)"
+  destAmount: BigInt!
+  reserve: Reserve!
+  createdAtBlockTimestamp: BigInt!
+  createdAtBlockNumber: BigInt!
+  createdAtLogIndex: BigInt!
+  createdAtTransactionHash: String!
+}
+
+type User @entity {
+  "Ethereum address"
+  id: ID!
+  "Trades by user"
+  trades: [ProxyTrade!] @derivedFrom(field: "trader")
+}
+
+type Reserve @entity {
+  "Ethereum address"
+  id: ID!
+  isPermissionless: Boolean!
+  isRemoved: Boolean!
+  isTradeEnabled: Boolean!
+  network: Network!
+  "Exchange rate contract (if applicable)"
+  rateContract: String
+  "Sanity rate contract (if applicable)"
+  sanityContract: String
+  "Reserve balances"
+  tokenBalances: [ReserveTokenBalance!] @derivedFrom(field: "reserve")
+  "Reserve trading pairs"
+  tradingPairs: [TradingPair!] @derivedFrom(field: "reserve")
+  "Trades through this reserve"
+  trades: [ReserveTrade!] @derivedFrom(field: "reserve")
+  createdAtBlockTimestamp: BigInt!
+  createdAtBlockNumber: BigInt!
+  createdAtLogIndex: BigInt!
+  createdAtTransactionHash: String!
+}
+
+type Network @entity {
+  "Ethereum address"
+  id: ID!
+  proxy: String!
+  isCurrentNetwork: Boolean!
+  isEnabled: Boolean!
+  "Reserves on this network"
+  reserves: [Reserve!] @derivedFrom(field: "network")
+}
+
+type TradingPair @entity {
+  id: ID!
+  reserve: Reserve!
+  "From token address"
+  src: String!
+  "To token address"
+  dest: String!
+  isTradingPairEnabled: Boolean!
+}
+
+type Token @entity {
+  "Ethereum address"
+  id: ID!
+  "Reserve balances of this token"
+  reserveBalances: [ReserveTokenBalance!] @derivedFrom(field: "token")
+}
+
+type ReserveTokenBalance @entity {
+  id: ID!
+  "Token amount (wei)"
+  amount: BigInt!
+  reserve: Reserve!
+  token: Token!
+}

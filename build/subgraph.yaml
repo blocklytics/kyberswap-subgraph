@@ -1,0 +1,94 @@
+specVersion: 0.0.2
+description: KyberSwap subgraph
+repository: https://github.com/blocklytics/kyberswap-subgraph
+schema:
+  file: schema.graphql
+dataSources:
+  - kind: ethereum/contract
+    name: KyberNetworkProxy
+    network: mainnet
+    source:
+      address: "0x818E6FECD516Ecc3849DAf6845e3EC868087B755"
+      abi: KyberNetworkProxy
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.3
+      language: wasm/assemblyscript
+      file: KyberNetworkProxy/KyberNetworkProxy.wasm
+      entities:
+        - ProxyTrade
+        - User
+        - KyberNetwork
+      abis:
+        - name: KyberNetworkProxy
+          file: KyberNetworkProxy/abis/KyberNetworkProxy.json
+      eventHandlers:
+        - event: ExecuteTrade(indexed address,address,address,uint256,uint256)
+          handler: handleExecuteTradeProxy
+        - event: KyberNetworkSet(address,address)
+          handler: handleKyberNetworkSet
+templates:
+  - kind: ethereum/contract
+    name: KyberReserve
+    network: mainnet
+    source:
+      abi: KyberReserve
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.3
+      language: wasm/assemblyscript
+      file: templates/KyberReserve/KyberReserve.wasm
+      entities:
+        - Reserve
+        - ReserveTokenBalance
+        - ReserveTrade
+        - Token
+      abis:
+        - name: KyberReserve
+          file: KyberReserve/abis/KyberReserve.json
+      eventHandlers:
+        - event: DepositToken(address,uint256)
+          handler: handleDepositToken
+        - event: TradeEnabled(bool)
+          handler: handleTradeEnabled
+        - event: TradeExecute(indexed address,address,uint256,address,uint256,address)
+          handler: handleTradeExecuteReserve
+        - event: SetContractAddresses(address,address,address)
+          handler: handleSetContractAddresses
+        - event: EtherWithdraw(uint256,address)
+          handler: handleEtherWithdraw
+        - event: TokenWithdraw(address,uint256,address)
+          handler: handleTokenWithdraw
+        - event: WithdrawFunds(address,uint256,address)
+          handler: handleWithdrawFunds
+  - kind: ethereum/contract
+    name: KyberNetwork
+    network: mainnet
+    source:
+      abi: KyberNetwork
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.3
+      language: wasm/assemblyscript
+      file: templates/KyberNetwork/KyberNetwork.wasm
+      entities:
+        - Reserve
+        - KyberNetwork
+        - Token
+        - TradingPair
+      abis:
+        - name: KyberNetwork
+          file: KyberNetwork/abis/KyberNetwork.json
+      eventHandlers:
+        - event: AddReserveToNetwork(indexed address,bool,bool)
+          handler: handleAddReserveToNetwork
+        - event: AddReserveToNetwork(address,bool)
+          handler: handleAddReserveToNetworkV1
+        - event: RemoveReserveFromNetwork(address)
+          handler: handleRemoveReserveFromNetwork
+        - event: ListReservePairs(indexed address,address,address,bool)
+          handler: handleListReservePairs
+        - event: ListReservePairs(address,address,address,bool)
+          handler: handleListReservePairsV1
+        - event: KyberNetworkSetEnable(bool)
+          handler: handleKyberNetworkSetEnable

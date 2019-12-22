@@ -1,0 +1,121 @@
+specVersion: 0.0.2
+description: KyberSwap subgraph
+repository: https://github.com/blocklytics/kyberswap-subgraph
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum/contract
+    name: KyberNetworkProxy
+    network: mainnet
+    source:
+      address: '0x818E6FECD516Ecc3849DAf6845e3EC868087B755'
+      abi: KyberNetworkProxy
+      # startBlock: 5911438
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.3
+      language: wasm/assemblyscript
+      file: ./src/mapping.ts
+      entities:
+        - ProxyTrade
+        - User
+        - KyberNetwork
+      abis:
+        - name: KyberNetworkProxy
+          file: ./abis/KyberNetworkProxy.json
+      eventHandlers:
+        - event: ExecuteTrade(indexed address,address,address,uint256,uint256)
+          handler: handleExecuteTradeProxy
+  # - AdminClaimed(address,address)
+  # - AlerterAdded(address,bool)
+  # - EtherWithdraw(uint256,address)
+        - event: KyberNetworkSet(address,address)
+          handler: handleKyberNetworkSet
+  # - OperatorAdded(address,bool)
+  # - TokenWithdraw(address,uint256,address)
+  # - TransferAdminPending(address)
+templates:
+  # These data sources templates exist to support the different flags that a token could specify- kind: ethereum/contract
+  - kind: ethereum/contract
+    name: KyberReserve
+    network: mainnet
+    source:
+      abi: KyberReserve
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.3
+      language: wasm/assemblyscript
+      file: ./src/mapping.ts
+      entities:
+        - Reserve
+        - ReserveTokenBalance
+        - ReserveTrade
+        - Token
+      abis:
+        - name: KyberReserve
+          file: ./abis/KyberReserve.json
+      eventHandlers:
+        - event: DepositToken(address,uint256)
+          handler: handleDepositToken
+        - event: TradeEnabled(bool)
+          handler: handleTradeEnabled
+        - event: TradeExecute(indexed address,address,uint256,address,uint256,address)
+          handler: handleTradeExecuteReserve
+        - event: SetContractAddresses(address,address,address)
+          handler: handleSetContractAddresses
+  # - AdminClaimed(address,address)
+  # - AlerterAdded(address,bool)
+        - event: EtherWithdraw(uint256,address)
+          handler: handleEtherWithdraw
+  # - OperatorAdded(address,bool)
+        - event: TokenWithdraw(address,uint256,address)
+          handler: handleTokenWithdraw
+  # - TransferAdminPending(address)
+  # - WithdrawAddressApproved(address,address,bool)
+        - event: WithdrawFunds(address,uint256,address)
+          handler: handleWithdrawFunds
+  - kind: ethereum/contract
+    name: KyberNetwork
+    network: mainnet
+    source:
+      abi: KyberNetwork
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.3
+      language: wasm/assemblyscript
+      file: ./src/mapping.ts
+      entities:
+        - Reserve
+        - KyberNetwork
+        - Token
+        - TradingPair
+      abis:
+        - name: KyberNetwork
+          file: ./abis/KyberNetwork.json
+      eventHandlers:
+        - event: AddReserveToNetwork(indexed address,bool,bool) # Current version # Event AddReserveToNetwork
+          handler: handleAddReserveToNetwork
+        - event: AddReserveToNetwork(address,bool) # Older version # Event AddReserveToNetwork1
+          handler: handleAddReserveToNetworkV1
+        - event: RemoveReserveFromNetwork(address)
+          handler: handleRemoveReserveFromNetwork
+        - event: ListReservePairs(indexed address,address,address,bool) # Current version # Event ListReservePairs
+          handler: handleListReservePairs
+        - event: ListReservePairs(address,address,address,bool) # Older version # Event ListReservePairs1
+          handler: handleListReservePairsV1
+  # - AdminClaimed(address,address)
+  # - AlerterAdded(address,bool)
+  # - EtherReceival(indexed address,uint256)
+  # - EtherWithdraw(uint256,address)
+  # - ExpectedRateContractSet(address,address)
+  # - FeeBurnerContractSet(address,address)
+        - event: KyberNetworkSetEnable(bool)
+          handler: handleKyberNetworkSetEnable
+  # - KyberNetwrokParamsSet(uint256,uint256)
+        # - event: KyberProxySet(address,address)
+          # handler: handleKyberProxySet
+  # - KyberTrade(indexed address,address,address,uint256,uint256,address,uint256,address,address,bytes)
+  # - OperatorAdded(address,bool)
+  # - TokenWithdraw(address,uint256,address)
+  # - TransferAdminPending(address)
+  # - WhiteListContractSet(address,address)
